@@ -18,6 +18,19 @@ namespace AnagramSolver.BusinessLogic
         private List<string> _keys = new();
         private Dictionary<string, int[]> _keyCounts = new();
 
+        public DefaultAnagramSolver(IWordRepository repo, int maxResults, int maxWords)
+        {
+            _maxResults = maxResults;
+            _maxWords = maxWords;
+
+            var normalizer = new WordNormalizer();
+            var mapBuilder = new AnagramMapBuilder();
+
+            var raw = repo.GetAllWords();
+            var clean = normalizer.NormalizeFileWords(raw);
+            _map = mapBuilder.Build(clean);
+        }
+
         public DefaultAnagramSolver(Dictionary<string, List<string>> map, int maxResults, int maxWords)
         {
             _map = map;

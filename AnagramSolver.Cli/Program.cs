@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using AnagramSolver.BusinessLogic;
+using AnagramSolver.Contracts;
 
 namespace AnagramSolver.Cli
 {
@@ -20,22 +21,20 @@ namespace AnagramSolver.Cli
             int maxWords = int.Parse(config["Settings:MaxWordsInAnagram"]);
             string path = config["Dictionary:WordFilePath"];
 
-            var repo = new FileWordRepository(path); 
             var normalizer = new WordNormalizer();
-            var mapBuilder = new AnagramMapBuilder();
 
-            var rawWords = repo.GetAllWords();
-            var cleanWords = normalizer.NormalizeFileWords(rawWords);
-            var map = mapBuilder.Build(cleanWords);
+            IWordRepository repo = new FileWordRepository(path);
 
-            var solver = new DefaultAnagramSolver(map, maxResults, maxWords);
+            IAnagramSolver solver = new DefaultAnagramSolver(repo, maxResults, maxWords);
+
+            var user = new UserProcessor(minUserLen);
 
             Console.WriteLine("Įveskite žodžius: ");
             string input = Console.ReadLine();
 
-            if(input.Length < minUserLen)
+            if (!user.IsValid(input))
             {
-                Console.WriteLine("Įvestas per trumpas žodis.");
+                Console.WriteLine($"Įvestas per trumpas žodis. Minimalus ilgis: {minUserLen}");
                 return;
             }
 
