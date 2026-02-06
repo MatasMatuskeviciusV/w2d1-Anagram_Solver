@@ -17,14 +17,14 @@ namespace AnagramSolver.WebApp.Tests
     public class HomeControllerMoqTests
     {
         [Fact]
-        public void Index_WhenNoInput_ShouldReturnEmptyModel_AndDontCallSolver()
+        public async Task Index_WhenNoInput_ShouldReturnEmptyModel_AndDontCallSolver()
         {
             var solver = new Mock<IAnagramSolver>();
             var user = new UserProcessor(3);
             var controller = new HomeController(solver.Object, user);
             string id = null;
 
-            var result = controller.Index(id);
+            var result = await controller.Index(id, CancellationToken.None);
 
             var view = result.Should().BeOfType<ViewResult>().Subject;
             var model = view.Model.Should().BeOfType<AnagramViewModel>().Subject;
@@ -32,18 +32,18 @@ namespace AnagramSolver.WebApp.Tests
             model.Query.Should().Be("");
             model.Results.Should().BeEmpty();
 
-            solver.Verify(s => s.GetAnagrams(It.IsAny<string>()), Times.Never);
+            solver.Verify(s => s.GetAnagramsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public void Index_WhenInputIsShorterThanMinLen_ShouldCallErrorNotSolver()
+        public async Task Index_WhenInputIsShorterThanMinLen_ShouldCallErrorNotSolver()
         {
             var solver = new Mock<IAnagramSolver>();
             var user = new UserProcessor(3);
             var controller = new HomeController(solver.Object, user);
             string id = "a labas";
 
-            var result = controller.Index(id);
+            var result = await controller.Index(id, CancellationToken.None);
 
             var view = result.Should().BeOfType<ViewResult>().Subject;
             var model = view.Model.Should().BeOfType<AnagramViewModel>().Subject;
@@ -51,19 +51,19 @@ namespace AnagramSolver.WebApp.Tests
             model.Error.Should().NotBeNullOrWhiteSpace();
             model.Results.Should().BeEmpty();
 
-            solver.Verify(s => s.GetAnagrams(It.IsAny<string>()), Times.Never);
+            solver.Verify(s => s.GetAnagramsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public void Index_WhenInputIsValid_AndSolverReturnsResults_ShouldReturnModelWithResults()
+        public async Task Index_WhenInputIsValid_AndSolverReturnsResults_ShouldReturnModelWithResults()
         {
             var solver = new Mock<IAnagramSolver>();
-            solver.Setup(s => s.GetAnagrams(It.IsAny<string>())).Returns(new List<string> { "alus" });
+            solver.Setup(s => s.GetAnagramsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<string> { "alus" });
             var user = new UserProcessor(3);
             var controller = new HomeController(solver.Object, user);
             string id = "alus";
 
-            var result = controller.Index(id);
+            var result = await controller.Index(id, CancellationToken.None);
 
             var view = result.Should().BeOfType<ViewResult>().Subject;
             var model = view.Model.Should().BeOfType<AnagramViewModel>().Subject;
@@ -72,20 +72,20 @@ namespace AnagramSolver.WebApp.Tests
             model.Results.Should().Contain("alus");
             model.Error.Should().BeNullOrEmpty();
 
-            solver.Verify(s => s.GetAnagrams(It.IsAny<string>()), Times.Once);
+            solver.Verify(s => s.GetAnagramsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
-        public void Index_WhenInputIsValid_AndSolverDoesNotReturnResults_ShouldReturnModelWithNoResults()
+        public async Task Index_WhenInputIsValid_AndSolverDoesNotReturnResults_ShouldReturnModelWithNoResults()
         {
             var solver = new Mock<IAnagramSolver>();
-            solver.Setup(s => s.GetAnagrams(It.IsAny<string>())).Returns(new List<string>());
+            solver.Setup(s => s.GetAnagramsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<string>());
             var user = new UserProcessor(3);
             var controller = new HomeController(solver.Object, user);
 
             string id = "aaaaaaa";
 
-            var result = controller.Index(id);
+            var result = await controller.Index(id, CancellationToken.None);
 
             var view = result.Should().BeOfType<ViewResult>().Subject;
             var model = view.Model.Should().BeOfType<AnagramViewModel>().Subject;
@@ -94,7 +94,7 @@ namespace AnagramSolver.WebApp.Tests
             model.Results.Should().BeEmpty();
             model.Error.Should().BeNullOrEmpty();
 
-            solver.Verify(s => s.GetAnagrams(It.IsAny<string>()), Times.Once);
+            solver.Verify(s => s.GetAnagramsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

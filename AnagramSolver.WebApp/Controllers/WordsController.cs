@@ -14,14 +14,14 @@ namespace AnagramSolver.WebApp.Controllers
             _repo = repo;
         }
 
-        public IActionResult Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1)
         {
             if (page < 1)
             {
                 page = 1;
             }
 
-            var all = _repo.GetAllWords().Select(w => (w ?? "").Trim()).Where(w => w.Length > 0).ToList();
+            var all = (await _repo.GetAllWordsAsync()).Select(w => (w ?? "").Trim()).Where(w => w.Length > 0).ToList();
 
             var totalPages = (int)Math.Ceiling(all.Count / (double)PageSize);
             if (totalPages == 0)

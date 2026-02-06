@@ -16,7 +16,7 @@ namespace AnagramSolver.WebApp.Controllers
             _userProcessor = userProcessor;
         }
 
-        public IActionResult Index(string? id)
+        public async Task<IActionResult> Index(string? id, CancellationToken ct = default)
         {
             var model = new AnagramViewModel
             {
@@ -39,7 +39,7 @@ namespace AnagramSolver.WebApp.Controllers
             var combined = normalizer.NormalizeUserWords(id);
             var key = AnagramKeyBuilder.BuildKey(combined);
 
-            model.Results = _solver.GetAnagrams(key).ToList();
+            model.Results = (await _solver.GetAnagramsAsync(key, ct)).ToList();
 
             return View(model);
         }

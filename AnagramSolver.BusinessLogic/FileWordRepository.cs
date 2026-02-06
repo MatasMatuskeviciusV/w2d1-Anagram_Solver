@@ -16,9 +16,10 @@ namespace AnagramSolver.BusinessLogic
             _path = path;
         }
 
-        public IEnumerable<string> GetAllWords()
+        public async Task<IEnumerable<string>> GetAllWordsAsync(CancellationToken ct = default)
         {
-            return File.ReadAllLines(_path, Encoding.UTF8);
+            var lines = await File.ReadAllLinesAsync(_path, Encoding.UTF8, ct);
+            return lines;
         }
     }
 }

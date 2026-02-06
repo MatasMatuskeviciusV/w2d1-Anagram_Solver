@@ -3,13 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AnagramSolver.BusinessLogic
 {
     public class DefaultAnagramSolver : IAnagramSolver
     {
-        private readonly Dictionary<string, List<string>> _map;
+        private Dictionary<string, List<string>>? _map;
+        private readonly IWordRepository? _repo;
         private readonly int _maxResults;
         private readonly int _maxWords;
 
@@ -20,15 +22,9 @@ namespace AnagramSolver.BusinessLogic
 
         public DefaultAnagramSolver(IWordRepository repo, int maxResults, int maxWords)
         {
+            _repo = repo;
             _maxResults = maxResults;
             _maxWords = maxWords;
-
-            var normalizer = new WordNormalizer();
-            var mapBuilder = new AnagramMapBuilder();
-
-            var raw = repo.GetAllWords();
-            var clean = normalizer.NormalizeFileWords(raw);
-            _map = mapBuilder.Build(clean);
         }
 
         public DefaultAnagramSolver(Dictionary<string, List<string>> map, int maxResults, int maxWords)
@@ -38,11 +34,26 @@ namespace AnagramSolver.BusinessLogic
             _maxWords = maxWords;
         }
 
-        public IList<string> GetAnagrams(string myWords)
+        public async Task<IList<string>> GetAnagramsAsync(string myWords, CancellationToken ct = default)
         {
             if (string.IsNullOrEmpty(myWords))
             {
                 return new List<string>();
+            }
+
+            if(_map == null)
+            {
+                if(_repo == null)
+                {
+                    return new List<string>();
+                }
+
+                var normalizer = new WordNormalizer();
+                var mapBuilder = new AnagramMapBuilder();
+
+                var raw = await _repo.GetAllWordsAsync(ct);
+                var clean = normalizer.NormalizeFileWords(raw);
+                _map = mapBuilder.Build(clean);
             }
             BuildAlphabet(myWords);
 

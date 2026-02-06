@@ -14,32 +14,32 @@ namespace AnagramSolver.Tests
     public class DefaultAnagramSolverMoqTests
     {
         [Fact]
-        public void GetAnagrams_ShouldReturnOneWordAnagrams_FromMockedRepository()
+        public async Task GetAnagrams_ShouldReturnOneWordAnagrams_FromMockedRepository()
         {
             var repo = new Mock<IWordRepository>();
-            repo.Setup(r => r.GetAllWords()).Returns(new[] { "praktikavimas" });
+            repo.Setup(r => r.GetAllWordsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new[] { "praktikavimas" });
             int maxResults = 10;
             int maxWords = 1;
             var solver = new DefaultAnagramSolver(repo.Object, maxResults, maxWords);
             var inputKey = AnagramKeyBuilder.BuildKey("vismapraktika");
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().Contain("praktikavimas");
 
         }
 
         [Fact]
-        public void GetAnagrams_ShouldReturnMultiWordAnagrams_FromMockedRepository()
+        public async Task GetAnagrams_ShouldReturnMultiWordAnagrams_FromMockedRepository()
         {
             var repo = new Mock<IWordRepository>();
-            repo.Setup(r => r.GetAllWords()).Returns(new[] { "kava", "trikampis" });
+            repo.Setup(r => r.GetAllWordsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new[] { "kava", "trikampis" });
             int maxResults = 10;
             int maxWords = 2;
             var solver = new DefaultAnagramSolver(repo.Object, maxResults, maxWords);
             var inputKey = AnagramKeyBuilder.BuildKey("vismapraktika");
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().Contain("kava trikampis");
         }

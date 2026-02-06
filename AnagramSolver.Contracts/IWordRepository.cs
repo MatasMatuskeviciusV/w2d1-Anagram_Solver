@@ -8,6 +8,6 @@ namespace AnagramSolver.Contracts
 {
     public interface IWordRepository
     {
-        IEnumerable<string> GetAllWords();
+        Task<IEnumerable<string>> GetAllWordsAsync(CancellationToken ct = default);
     }
 }

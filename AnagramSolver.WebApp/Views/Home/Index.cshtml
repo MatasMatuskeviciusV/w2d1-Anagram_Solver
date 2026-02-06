@@ -2,8 +2,8 @@
 
 <h2>Anagramų paieška</h2>
 
-<form asp-action="Index" method="get">
-    <input type="text" name="id" placeholder="Įveskite žodį" />
+<form asp-controller="Home" asp-action="Index" asp-route-id="" method="get">
+    <input type="text" name="id" value="@Model.Query" placeholder="Įveskite žodį" />
     <button type="submit">Ieškoti</button>
 </form>
 

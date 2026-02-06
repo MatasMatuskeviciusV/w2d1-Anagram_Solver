@@ -9,7 +9,7 @@ namespace AnagramSolver.Cli
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.InputEncoding = Encoding.UTF8;
             Console.OutputEncoding = Encoding.UTF8;
@@ -41,7 +41,7 @@ namespace AnagramSolver.Cli
             var combined = normalizer.NormalizeUserWords(input);
             var sortedKey = AnagramKeyBuilder.BuildKey(combined);
 
-            var results = solver.GetAnagrams(sortedKey);
+            var results = await solver.GetAnagramsAsync(sortedKey);
 
             if(results.Count == 0)
             {

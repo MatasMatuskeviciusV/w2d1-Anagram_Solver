@@ -12,7 +12,7 @@ namespace AnagramSolver.Tests
     public class DefaultAnagramSolverTests
     {
         [Fact]
-        public void GetAnagrams_ShouldReturnOneWordAnagrams()
+        public async Task GetAnagrams_ShouldReturnOneWordAnagrams()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -26,7 +26,7 @@ namespace AnagramSolver.Tests
 
             var inputKey = "aabls";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().ContainSingle();
             results.Should().Contain("labas");
@@ -34,7 +34,7 @@ namespace AnagramSolver.Tests
 
         [Fact]
 
-        public void GetAnagrams_WhenNoInput_ShouldReturnEmptyList()
+        public async Task GetAnagrams_WhenNoInput_ShouldReturnEmptyList()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -48,13 +48,13 @@ namespace AnagramSolver.Tests
 
             string inputKey = null;
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().BeEmpty();
         }
 
         [Fact]
-        public void GetAnagrams_WhenEmptyInput_ShouldReturnEmptyList()
+        public async Task GetAnagrams_WhenEmptyInput_ShouldReturnEmptyList()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -68,13 +68,13 @@ namespace AnagramSolver.Tests
 
             var inputKey = "";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().BeEmpty();
         }
 
         [Fact]
-        public void GetAnagrams_ShouldReturnMultipleWordAnagrams()
+        public async Task GetAnagrams_ShouldReturnMultipleWordAnagrams()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -89,13 +89,13 @@ namespace AnagramSolver.Tests
 
             var inputKey = "aaaiikkmprstv";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().Contain("kava trikampis");
         }
 
         [Fact]
-        public void GetAnagrams_WhenNoAnagramsFound_ShouldReturnEmptyList()
+        public async Task GetAnagrams_WhenNoAnagramsFound_ShouldReturnEmptyList()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -110,13 +110,13 @@ namespace AnagramSolver.Tests
 
             var inputKey = "aaaaaaaaaaaaaaaaaa";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().BeEmpty();
         }
 
         [Fact]
-        public void GetAnagrams_ShouldNotReturnMoreThanMaxResults()
+        public async Task GetAnagrams_ShouldNotReturnMoreThanMaxResults()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -130,13 +130,13 @@ namespace AnagramSolver.Tests
 
             var inputKey = "abcde";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().HaveCount(maxResults);
         }
 
         [Fact]
-        public void GetAnagrams_ShouldNotReturnMoreThanMaxWords()
+        public async Task GetAnagrams_ShouldNotReturnMoreThanMaxWords()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -152,14 +152,14 @@ namespace AnagramSolver.Tests
 
             var inputKey = "abcdef";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().OnlyContain(r => r.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= maxWords);
 
         }
 
         [Fact]
-        public void GetAnagrams_ShouldUseAllLettersExactly()
+        public async Task GetAnagrams_ShouldUseAllLettersExactly()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -173,13 +173,13 @@ namespace AnagramSolver.Tests
 
             var inputKey = "abcd";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().BeEmpty();
         }
 
         [Fact]
-        public void GetAnagrams_WhenMaxWordsTooSmall_ShouldReturnEmptyList()
+        public async Task GetAnagrams_WhenMaxWordsTooSmall_ShouldReturnEmptyList()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -194,13 +194,13 @@ namespace AnagramSolver.Tests
 
             var inputKey = "abcdef";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().BeEmpty();
         }
 
         [Fact]
-        public void GetAnagrams_WhenDifferentKeys_ShouldIgnore()
+        public async Task GetAnagrams_WhenDifferentKeys_ShouldIgnore()
         {
             var map = new Dictionary<string, List<string>>
             {
@@ -215,7 +215,7 @@ namespace AnagramSolver.Tests
 
             var inputKey = "abc";
 
-            var results = solver.GetAnagrams(inputKey);
+            var results = await solver.GetAnagramsAsync(inputKey);
 
             results.Should().Contain("bac");
         }
