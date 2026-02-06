@@ -11,4 +11,10 @@
     <ProjectReference Include="..\AnagramSolver.Contracts\AnagramSolver.Contracts.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Content Include="Data\zodynas.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 </Project>

@@ -1,10 +1,13 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
     <File Path=".gitignore" />
+    <File Path="Dockerfile" />
   </Folder>
   <Project Path="AnagramSolver.BusinessLogic/AnagramSolver.BusinessLogic.csproj" />
   <Project Path="AnagramSolver.Cli/AnagramSolver.Cli.csproj" />
   <Project Path="AnagramSolver.Contracts/AnagramSolver.Contracts.csproj" />
   <Project Path="AnagramSolver.Tests/AnagramSolver.Tests.csproj" Id="c8d16806-64fc-42cb-841a-ea8df4ec2225" />
+  <Project Path="AnagramSolver.WebApp.Tests/AnagramSolver.WebApp.Tests.csproj" Id="c5dc2b16-6ed7-4561-aacd-6ff133362233" />
   <Project Path="AnagramSolver.WebApp/AnagramSolver.WebApp.csproj" Id="40f8da1e-9661-4318-a205-981e9f2c9104" />
 </Solution>
