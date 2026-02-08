@@ -8,10 +8,14 @@ namespace AnagramSolver.WebApp.Controllers
     public class WordsApiController : ControllerBase
     {
         private readonly IWordRepository _repo;
+        private readonly IConfiguration _cfg;
+        private readonly IWebHostEnvironment _env;
 
-        public WordsApiController(IWordRepository repo)
+        public WordsApiController(IWordRepository repo, IConfiguration config, IWebHostEnvironment env)
         {
             _repo = repo;
+            _cfg = config;
+            _env = env;
         }
 
         [HttpGet]
@@ -48,20 +52,53 @@ namespace AnagramSolver.WebApp.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create([FromBody] string word)
+        public async Task<IActionResult> Create([FromBody] string word, CancellationToken ct)
         {
-            if (string.IsNullOrWhiteSpace(word))
+            var result = await _repo.AddWordAsync(word, ct);
+
+            if (result == AddWordResult.Added)
             {
-                return BadRequest("Neįvestas žodis.");              //cia fake metodas, priminimas pridet funkcionaluma
+                return Created("", new { status = "added", word });
             }
 
-            return Ok($"Žodis '{word}' pridėtas.");
+            if(result == AddWordResult.AlreadyExists)
+            {
+                return Conflict(new { status = "already-exists" });
+            }
+
+            if(result == AddWordResult.Invalid)
+            {
+                return BadRequest(new { status = "invalid" });
+            }
+
+            return StatusCode(500);
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            return Ok($"Žodis '{id}' ištrintas.");    //cia irgi
+            return Ok($"Žodis '{id}' ištrintas.");    //cia fake metodas, priminimas pridet funkcionaluma
+        }
+
+        [HttpGet("download")]
+        public IActionResult DownloadDictionary()
+        {
+            var relative = _cfg["Dictionary:WordFilePath"];
+            if (string.IsNullOrWhiteSpace(relative))
+            {
+                return StatusCode(500);
+            }
+
+            var fullPath = System.IO.Path.Combine(_env.ContentRootPath, relative);
+
+            if (!System.IO.File.Exists(fullPath))
+            {
+                return NotFound();
+            }
+
+            var downloadName = System.IO.Path.GetFileName(fullPath);
+
+            return PhysicalFile(fullPath, "text/plain", downloadName);
         }
     }
 }

@@ -1,5 +1,6 @@
 using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
+using AnagramSolver.WebApp.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +16,7 @@ builder.Services.AddScoped<IWordRepository>(sp =>
     var env = sp.GetRequiredService<IWebHostEnvironment>();
 
     var relative = cfg["Dictionary:WordFilePath"];
-    var fullPath = Path.Combine(env.ContentRootPath, relative);
+    var fullPath = System.IO.Path.Combine(env.ContentRootPath, relative);
 
     return new FileWordRepository(fullPath);
 });
@@ -38,10 +39,13 @@ builder.Services.AddScoped<UserProcessor>(sp =>
     return new UserProcessor(minLen);
 });
 
+builder.Services.AddGraphQLServer().AddQueryType<Query>();
+
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.MapGraphQL("/graphql");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
