@@ -30,19 +30,15 @@ else if (!string.IsNullOrWhiteSpace(Model.Query))
     <p>Anagramų nerasta</p>
 }
 
-@* <script>
-    const key = `anagram_${Model.Query}`;
+<script>
+    const word = "@Model.Query";
+    const key = `anagram_${word}`;
+    const value = @Html.Raw(Json.Serialize(Model.Results));
+
     const cached = localStorage.getItem(key);
 
-    if (cached) {
-        displayResults(JSON.parse(cached));
-    } else {
-        fetch(`/api/anagrams/${Model.Query}`)
-            .then(r => r.json())
-            .then(data => {
-                localStorage.setItem(key, JSON.stringify(data));
-                displayResults(data);
-            });
+    if(!cached)
+    {
+        localStorage.setItem(key, value);
     }
-
-</script> *@
+</script>
