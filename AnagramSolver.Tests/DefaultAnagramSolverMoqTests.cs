@@ -9,6 +9,9 @@ using AnagramSolver.BusinessLogic;
 using Xunit;
 using FluentAssertions;
 
+//viskas mockinta, neturi but int maxResults ir t.t.
+//DI
+
 namespace AnagramSolver.Tests
 {
     public class DefaultAnagramSolverMoqTests
@@ -21,7 +24,7 @@ namespace AnagramSolver.Tests
             int maxResults = 10;
             int maxWords = 1;
             var solver = new DefaultAnagramSolver(repo.Object, maxResults, maxWords);
-            var inputKey = AnagramKeyBuilder.BuildKey("vismapraktika");
+            var inputKey = AnagramKeySorter.BuildKey("vismapraktika");
 
             var results = await solver.GetAnagramsAsync(inputKey);
 
@@ -37,7 +40,7 @@ namespace AnagramSolver.Tests
             int maxResults = 10;
             int maxWords = 2;
             var solver = new DefaultAnagramSolver(repo.Object, maxResults, maxWords);
-            var inputKey = AnagramKeyBuilder.BuildKey("vismapraktika");
+            var inputKey = AnagramKeySorter.BuildKey("vismapraktika");
 
             var results = await solver.GetAnagramsAsync(inputKey);
 

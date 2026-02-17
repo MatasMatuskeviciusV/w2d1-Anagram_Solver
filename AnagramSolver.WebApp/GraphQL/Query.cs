@@ -19,7 +19,7 @@ namespace AnagramSolver.WebApp.GraphQL
 
             var normalizer = new WordNormalizer();
             var normalized = normalizer.NormalizeUserWords(word);
-            var key = AnagramKeyBuilder.BuildKey(normalized);
+            var key = AnagramKeySorter.BuildKey(normalized);
 
             return await solver.GetAnagramsAsync(key, ct);
         }

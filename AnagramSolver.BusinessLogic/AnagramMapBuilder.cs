@@ -14,7 +14,7 @@ namespace AnagramSolver.BusinessLogic
 
             foreach (var word in words)
             {
-                var key = AnagramKeyBuilder.BuildKey(word);
+                var key = AnagramKeySorter.BuildKey(word);
 
                 if (!map.TryGetValue(key, out var list))
                 {

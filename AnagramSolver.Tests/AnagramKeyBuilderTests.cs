@@ -16,7 +16,7 @@ namespace AnagramSolver.Tests
         {
             var letters = "cbadfe";
 
-            var results = AnagramKeyBuilder.BuildKey(letters);
+            var results = AnagramKeySorter.BuildKey(letters);
 
             results.Should().Be("abcdef");
         }
@@ -26,7 +26,7 @@ namespace AnagramSolver.Tests
         {
             var letters = "";
 
-            var results = AnagramKeyBuilder.BuildKey(letters);
+            var results = AnagramKeySorter.BuildKey(letters);
 
             results.Should().BeEmpty();
         }
@@ -36,7 +36,7 @@ namespace AnagramSolver.Tests
         {
             string letters = null;
 
-            var results = AnagramKeyBuilder.BuildKey(letters);
+            var results = AnagramKeySorter.BuildKey(letters);
 
             results.Should().BeEmpty();
         }
@@ -46,7 +46,7 @@ namespace AnagramSolver.Tests
         {
             var letters = "cbaaddcfee";
 
-            var results = AnagramKeyBuilder.BuildKey(letters);
+            var results = AnagramKeySorter.BuildKey(letters);
 
             results.Should().Be("aabccddeef");
         }
@@ -56,7 +56,7 @@ namespace AnagramSolver.Tests
         {
             var letters = "abcd";
 
-            var results = AnagramKeyBuilder.BuildKey(letters);
+            var results = AnagramKeySorter.BuildKey(letters);
 
             results.Should().Be("abcd");
         }
@@ -66,7 +66,7 @@ namespace AnagramSolver.Tests
         {
             var letters = "3b2c1a";
 
-            var results = AnagramKeyBuilder.BuildKey(letters);
+            var results = AnagramKeySorter.BuildKey(letters);
 
             results.Should().Be("123abc");
         }

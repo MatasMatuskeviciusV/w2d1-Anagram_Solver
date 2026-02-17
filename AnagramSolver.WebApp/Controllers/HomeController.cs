@@ -72,7 +72,7 @@ namespace AnagramSolver.WebApp.Controllers
 
             var normalizer = new WordNormalizer();
             var combined = normalizer.NormalizeUserWords(id);
-            var key = AnagramKeyBuilder.BuildKey(combined);
+            var key = AnagramKeySorter.BuildKey(combined);
 
             model.Results = (await _solver.GetAnagramsAsync(key, ct)).ToList();
 

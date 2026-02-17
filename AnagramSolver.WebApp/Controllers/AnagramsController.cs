@@ -33,7 +33,7 @@ namespace AnagramSolver.WebApp.Controllers
 
             var normalizer = new WordNormalizer();
             var combined = normalizer.NormalizeUserWords(word);
-            var key = AnagramKeyBuilder.BuildKey(combined);
+            var key = AnagramKeySorter.BuildKey(combined);
 
             var anagrams = await _solver.GetAnagramsAsync(key, ct);
             return Ok(anagrams);

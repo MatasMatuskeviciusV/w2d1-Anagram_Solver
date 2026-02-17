@@ -1,8 +1,11 @@
 using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
 using AnagramSolver.WebApp.GraphQL;
+using AnagramSolver.BusinessLogic.Decorators;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//transient singleton ir scoped
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -29,10 +32,11 @@ builder.Services.AddScoped<IAnagramSolver>(sp =>
     int maxResults = int.Parse(cfg["Settings:MaxResults"]);
     int maxWords = int.Parse(cfg["Settings:MaxWordsInAnagram"]);
 
+    IAnagramSolver core = new DefaultAnagramSolver(repo, maxResults, maxWords);
     return new DefaultAnagramSolver(repo, maxResults, maxWords);
 });
 
-builder.Services.AddScoped<UserProcessor>(sp =>
+builder.Services.AddSingleton<UserProcessor>(sp =>
 {
     var cfg = sp.GetRequiredService<IConfiguration>();
     int minLen = int.Parse(cfg["Settings:MinUserWordLength"]);
@@ -49,6 +53,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+//builder.Services.AddTransient(IAnagramSolver, typeof(DefaultAnagramSolver))
 
 var app = builder.Build();
 

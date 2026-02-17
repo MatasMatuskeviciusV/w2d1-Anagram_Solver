@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AnagramSolver.BusinessLogic
 {
-    public static class AnagramKeyBuilder
+    public static class AnagramKeySorter
     {
         public static string BuildKey(string letters)
         {

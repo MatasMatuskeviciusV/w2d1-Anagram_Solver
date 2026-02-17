@@ -10,4 +10,5 @@
   <Project Path="AnagramSolver.Tests/AnagramSolver.Tests.csproj" Id="c8d16806-64fc-42cb-841a-ea8df4ec2225" />
   <Project Path="AnagramSolver.WebApp.Tests/AnagramSolver.WebApp.Tests.csproj" Id="c5dc2b16-6ed7-4561-aacd-6ff133362233" />
   <Project Path="AnagramSolver.WebApp/AnagramSolver.WebApp.csproj" Id="40f8da1e-9661-4318-a205-981e9f2c9104" />
+  <Project Path="GenericsDelegatesExperiments/GenericsDelegatesExperiments.csproj" Id="23d7be81-2a02-4d73-aa3b-4fac36262c0a" />
 </Solution>
