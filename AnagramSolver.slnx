@@ -1,4 +1,16 @@
 <Solution>
+  <Folder Name="/Dapper/">
+    <Project Path="AnagramSolver.Dapper/AnagramSolver.Dapper.csproj" />
+  </Folder>
+  <Folder Name="/Dapper/Models/" />
+  <Folder Name="/EF.CodeFirst/">
+    <Project Path="AnagramSolver.EF.CodeFirst.Runner/AnagramSolver.EF.CodeFirst.Runner.csproj" />
+    <Project Path="AnagramSolver.EF.CodeFirst/AnagramSolver.EF.CodeFirst.csproj" Id="e219a83c-0c77-47cb-9836-0137b498105b" />
+  </Folder>
+  <Folder Name="/EF.DatabaseFirst/">
+    <Project Path="AnagramSolver.EF.DatabaseFirst.Runner/AnagramSolver.EF.DatabaseFirst.Runner.csproj" />
+    <Project Path="AnagramSolver.EF.DatabaseFirst/AnagramSolver.EF.DatabaseFirst.csproj" Id="f1651852-dfff-48fc-8eca-e33d490cfecd" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".dockerignore" />
     <File Path=".gitignore" />

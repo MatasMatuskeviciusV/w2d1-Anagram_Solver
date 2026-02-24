@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AnagramSolver.BusinessLogic\AnagramSolver.BusinessLogic.csproj" />
     <ProjectReference Include="..\AnagramSolver.Contracts\AnagramSolver.Contracts.csproj" />
+    <ProjectReference Include="..\AnagramSolver.EF.CodeFirst\AnagramSolver.EF.CodeFirst.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -18,7 +19,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Dapper" Version="2.1.66" />
 	  <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.12" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	    <PrivateAssets>all</PrivateAssets>
+	  </PackageReference>
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.2" />
 	</ItemGroup>
 

@@ -2,6 +2,9 @@ using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
 using AnagramSolver.WebApp.GraphQL;
 using AnagramSolver.BusinessLogic.Decorators;
+using AnagramSolver.EF.CodeFirst.Data;
+using Microsoft.EntityFrameworkCore;
+using AnagramSolver.EF.CodeFirst.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,11 +12,32 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDbContext<AnagramDbContext>(options =>
+{
+    var cs = builder.Configuration.GetConnectionString("AnagramDb");
+    options.UseSqlServer(cs);
+});
+
+//builder.Services.AddScoped<IWordRepository, EfWordRepository>();
+//builder.Services.AddScoped<ISearchLogRepository, EfSearchLogRepository>();
+
+
 builder.Services.AddScoped<IWordRepository>(sp =>
+{
+    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("AnagramDb");
+    return new DapperWordRepository(cs);
+});
+
+builder.Services.AddScoped<ISearchLogRepository>(sp =>
+{
+    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("AnagramDb");
+    return new DapperSearchLogRepository(cs);
+});
+
+/*builder.Services.AddScoped<IWordRepository>(sp =>
 {
     var cfg = sp.GetRequiredService<IConfiguration>();
     var env = sp.GetRequiredService<IWebHostEnvironment>();
@@ -22,18 +46,21 @@ builder.Services.AddScoped<IWordRepository>(sp =>
     var fullPath = System.IO.Path.Combine(env.ContentRootPath, relative);
 
     return new FileWordRepository(fullPath);
-});
+});*/
 
 builder.Services.AddScoped<IAnagramSolver>(sp =>
 {
     var cfg = sp.GetRequiredService<IConfiguration>();
     var repo = sp.GetRequiredService<IWordRepository>();
+    var logRepo = sp.GetRequiredService<ISearchLogRepository>();
 
     int maxResults = int.Parse(cfg["Settings:MaxResults"]);
     int maxWords = int.Parse(cfg["Settings:MaxWordsInAnagram"]);
 
     IAnagramSolver core = new DefaultAnagramSolver(repo, maxResults, maxWords);
-    return new DefaultAnagramSolver(repo, maxResults, maxWords);
+    IAnagramSolver cached = new CachingAnagramSolver(core, maxResults, maxWords);
+
+    return new LoggingAnagramSolver(cached, logRepo);
 });
 
 builder.Services.AddSingleton<UserProcessor>(sp =>
