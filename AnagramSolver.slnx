@@ -2,7 +2,6 @@
   <Folder Name="/Dapper/">
     <Project Path="AnagramSolver.Dapper/AnagramSolver.Dapper.csproj" />
   </Folder>
-  <Folder Name="/Dapper/Models/" />
   <Folder Name="/EF.CodeFirst/">
     <Project Path="AnagramSolver.EF.CodeFirst.Runner/AnagramSolver.EF.CodeFirst.Runner.csproj" />
     <Project Path="AnagramSolver.EF.CodeFirst/AnagramSolver.EF.CodeFirst.csproj" Id="e219a83c-0c77-47cb-9836-0137b498105b" />

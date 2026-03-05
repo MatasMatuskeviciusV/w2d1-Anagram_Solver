@@ -1,0 +1,267 @@
+@{
+    ViewData["Title"] = "AI Chat - Anagram Assistant";
+}
+
+<div class="container mt-4">
+    <h2>AI Anagram Assistant</h2>
+    <p class="text-muted">Chat with our AI to find anagrams and more</p>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Chat Container -->
+            <div id="chatContainer" class="border rounded p-3" style="height: 500px; overflow-y: auto; background-color: #f8f9fa; margin-bottom: 1rem;">
+                <div id="messagesContainer">
+                    <div class="alert alert-info" role="alert">
+                        💬 Start typing to chat with the AI assistant. Ask about anagrams!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-group mb-3">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    class="form-control" 
+                    placeholder="Type your message here... (e.g., 'Find anagrams for listen')" 
+                    aria-label="Chat message input">
+                <button class="btn btn-primary" type="button" id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+
+            <!-- Clear History Button -->
+            <button class="btn btn-secondary btn-sm" onclick="clearChat()">Clear History</button>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">💡 Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li>Ask to find anagrams: "Find anagrams for cat"</li>
+                        <li>Ask to count anagrams: "How many anagrams for 'silent'?"</li>
+                        <li>Get current time: "What time is it?"</li>
+                        <li>General questions welcome too!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Session Info -->
+            <div class="card mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">ℹ️ Info</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-0">Session automatically managed by the server.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles for Chat -->
+<style>
+    #chatContainer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        animation: slideIn 0.3s ease-in-out;
+    }
+
+    .message.user {
+        text-align: right;
+    }
+
+    .message.user .message-content {
+        background-color: #007bff;
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem 1rem 0 1rem;
+        display: inline-block;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .message.assistant .message-content {
+        background-color: #e9ecef;
+        color: #212529;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem 1rem 1rem 0;
+        display: inline-block;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .message-timestamp {
+        font-size: 0.75rem;
+        color: #999;
+        margin-top: 0.25rem;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    #messageInput:focus {
+        border-color: #0077cc;
+        box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    }
+</style>
+
+<!-- Chat Script -->
+<script>
+    // Load chat history on page load
+    window.addEventListener('load', async () => {
+        console.log('Page loaded, initializing chat...');
+        await loadChatHistory();
+    });
+
+    // Allow sending message with Enter key
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    async function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value.trim();
+
+        if (!message) {
+            return;
+        }
+
+        // Display user message
+        displayMessage(message, 'user');
+        messageInput.value = '';
+
+        // Disable send button while processing
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.disabled = true;
+
+        try {
+            // Send message to API - session ID automatically included via cookies
+            const response = await fetch('/api/aichat/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    message: message
+                })
+            });
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                let errorMsg = 'Unknown error';
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.response || errorData.errorMessage || JSON.stringify(errorData);
+                } catch (e) {
+                    errorMsg = await response.text() || response.statusText;
+                }
+                console.error('API Error:', response.status, errorMsg);
+                displayMessage('Error (' + response.status + '): ' + errorMsg, 'assistant');
+                return;
+            }
+
+            const data = await response.json();
+            console.log('Response data:', data);
+            // API property is 'Response' (PascalCase)
+            displayMessage(data.Response || data.response, 'assistant');
+        } catch (error) {
+            console.error('Fetch error:', error);
+            displayMessage('Error: ' + error.message, 'assistant');
+        } finally {
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+    }
+
+    function displayMessage(content, role) {
+        const messagesContainer = document.getElementById('messagesContainer');
+
+        // Remove initial alert if this is the first message
+        const alert = messagesContainer.querySelector('.alert');
+        if (alert) {
+            alert.remove();
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role}`;
+
+        const timestamp = new Date().toLocaleTimeString();
+
+        messageDiv.innerHTML = `
+            <div class="message-content">${escapeHtml(content)}</div>
+            <div class="message-timestamp">${timestamp}</div>
+        `;
+
+        messagesContainer.appendChild(messageDiv);
+
+        // Scroll to bottom
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function loadChatHistory() {
+        try {
+            console.log('Loading chat history...');
+            // Session ID is automatically handled by HttpContext.Session
+            const response = await fetch('/api/aichat/chat/history', {
+                credentials: 'include'
+            });
+
+            console.log('Chat history response status:', response.status);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Chat history data:', data);
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.innerHTML = ''; // Clear initial content
+
+                if (data.Messages && data.Messages.length > 0) {
+                    console.log('Displaying', data.Messages.length, 'messages');
+                    data.Messages.forEach(msg => {
+                        // API returns PascalCase: Content and Role
+                        console.log('Message:', msg);
+                        displayMessage(msg.Content, msg.Role.toLowerCase());
+                    });
+                } else {
+                    console.log('No messages in history');
+                    messagesContainer.innerHTML = '<div class="alert alert-info" role="alert">💬 Start typing to chat with the AI assistant. Ask about anagrams!</div>';
+                }
+            } else {
+                console.error('Failed to load chat history. Status:', response.status);
+            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+        }
+    }
+
+    function clearChat() {
+        if (confirm('Are you sure you want to clear the chat history?')) {
+            document.getElementById('messagesContainer').innerHTML = '<div class="alert alert-info" role="alert">💬 Start typing to chat with the AI assistant. Ask about anagrams!</div>';
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>

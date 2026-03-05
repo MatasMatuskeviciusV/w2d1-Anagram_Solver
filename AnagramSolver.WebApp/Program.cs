@@ -1,10 +1,13 @@
 using AnagramSolver.BusinessLogic;
-using AnagramSolver.Contracts;
-using AnagramSolver.WebApp.GraphQL;
 using AnagramSolver.BusinessLogic.Decorators;
+using AnagramSolver.Contracts;
 using AnagramSolver.EF.CodeFirst.Data;
-using Microsoft.EntityFrameworkCore;
 using AnagramSolver.EF.CodeFirst.Repositories;
+using AnagramSolver.WebApp.GraphQL;
+using AnagramSolver.WebApp.Plugins;
+using AnagramSolver.WebApp.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddKernel();
+builder.Services.AddOpenAIChatCompletion(
+    modelId: builder.Configuration["OpenAI:Model"]!,
+    apiKey: builder.Configuration["OpenAI:ApiKey"]!);
+
+builder.Services.AddScoped<AnagramPlugin>();
+builder.Services.AddScoped<TimePlugin>();
+builder.Services.AddSingleton<IChatHistoryRepository, InMemoryChatHistoryRepository>();
+builder.Services.AddScoped<IAiChatService, AiChatService>();
 
 builder.Services.AddDbContext<AnagramDbContext>(options =>
 {
@@ -37,16 +50,16 @@ builder.Services.AddScoped<ISearchLogRepository>(sp =>
     return new DapperSearchLogRepository(cs);
 });
 
-/*builder.Services.AddScoped<IWordRepository>(sp =>
-{
-    var cfg = sp.GetRequiredService<IConfiguration>();
-    var env = sp.GetRequiredService<IWebHostEnvironment>();
+//builder.Services.AddScoped<IWordRepository>(sp =>
+//{
+//    var cfg = sp.GetRequiredService<IConfiguration>();
+//    var env = sp.GetRequiredService<IWebHostEnvironment>();
 
-    var relative = cfg["Dictionary:WordFilePath"];
-    var fullPath = System.IO.Path.Combine(env.ContentRootPath, relative);
+//    var relative = cfg["Dictionary:WordFilePath"];
+//    var fullPath = System.IO.Path.Combine(env.ContentRootPath, relative);
 
-    return new FileWordRepository(fullPath);
-});*/
+//    return new FileWordRepository(fullPath);
+//});
 
 builder.Services.AddScoped<IAnagramSolver>(sp =>
 {
@@ -100,14 +113,23 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseSession();
+
 app.UseRouting();
 
 app.UseAuthorization();
-
-app.UseSession();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+/// <summary>
+/// No-op hosted service used only to trigger kernel plugin initialization during startup.
+/// </summary>
+internal class NoOpHostedService : IHostedService
+{
+    public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+}
