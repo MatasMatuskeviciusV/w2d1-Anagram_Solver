@@ -4,6 +4,16 @@ description: Ensures strict separation between business logic, webapp, and DB la
 tools: []
 ---
 
+
+
+
+
+CIA PAZIURET EXTRA
+
+
+
+
+
 # Role
 You are the Architecture Guardian for the AnagramSolver project.
 

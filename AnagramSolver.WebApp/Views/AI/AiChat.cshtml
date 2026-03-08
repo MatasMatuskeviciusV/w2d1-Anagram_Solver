@@ -234,12 +234,16 @@
                 const messagesContainer = document.getElementById('messagesContainer');
                 messagesContainer.innerHTML = ''; // Clear initial content
 
-                if (data.Messages && data.Messages.length > 0) {
-                    console.log('Displaying', data.Messages.length, 'messages');
-                    data.Messages.forEach(msg => {
-                        // API returns PascalCase: Content and Role
+                const historyMessages = data.messages || data.Messages || [];
+
+                if (historyMessages.length > 0) {
+                    console.log('Displaying', historyMessages.length, 'messages');
+                    historyMessages.forEach(msg => {
+                        // Support both camelCase and PascalCase payloads.
+                        const content = msg.content || msg.Content || '';
+                        const role = (msg.role || msg.Role || 'assistant').toLowerCase();
                         console.log('Message:', msg);
-                        displayMessage(msg.Content, msg.Role.toLowerCase());
+                        displayMessage(content, role);
                     });
                 } else {
                     console.log('No messages in history');

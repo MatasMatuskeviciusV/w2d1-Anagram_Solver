@@ -1,0 +1,40 @@
+{
+  "servers": {
+    "my-server-name": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem",
+               "${workspaceFolder}"]
+    },
+    "my-weather-server": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/matas.matuskevicius/source/repos/MCP servers/example-mcp-servers-main",
+        "run",
+        "--python",
+        "3.13",
+        "weather.py"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
+    "text-analysis": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/matas.matuskevicius/source/repos/MCP servers/text-analysis-mcp",
+        "run",
+        "--python",
+        "3.13",
+        "main.py"
+      ]
+    }
+  }
+}
