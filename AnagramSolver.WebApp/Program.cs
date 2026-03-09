@@ -28,6 +28,13 @@ builder.Services.AddScoped<TimePlugin>();
 builder.Services.AddSingleton<IChatHistoryRepository, InMemoryChatHistoryRepository>();
 builder.Services.AddScoped<IAiChatService, AiChatService>();
 
+builder.Services.AddScoped<IWordFrequencyAnalyzer>(sp =>
+{
+    var cfg = sp.GetRequiredService<IConfiguration>();
+    var stopWords = cfg.GetSection("Analysis:StopWords").Get<string[]>() ?? Array.Empty<string>();
+    return new WordFrequencyAnalyzer(stopWords);
+});
+
 builder.Services.AddDbContext<AnagramDbContext>(options =>
 {
     var cs = builder.Configuration.GetConnectionString("AnagramDb");
@@ -124,6 +131,10 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program
+{
+}
 
 /// <summary>
 /// No-op hosted service used only to trigger kernel plugin initialization during startup.
