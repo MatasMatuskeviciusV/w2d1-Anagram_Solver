@@ -1,47 +1,56 @@
-# Code Review: Word Frequency Analysis Tests
+# Code Review: Group Chat Workflow
 
-Reviewed against: `docs/test-plan.md`
+Reviewed against: `docs/plan.md`
 
 ## Findings (ordered by severity)
 
-### 1. Medium: Wrong-content-type API test is still intentionally ambiguous instead of locking observed behavior
-- Evidence: `AnagramSolver.WebApp.Tests/AnalysisControllerApiTests.cs:167`
-- Plan expectation: `docs/test-plan.md` section 6.5 allows `400` or `415` initially, but explicitly says to record actual expected status once confirmed by execution.
-- Current issue: the assertion remains `BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnsupportedMediaType)`, which does not lock current runtime behavior.
-- Risk: regressions between `400` and `415` will not be detected, even after behavior has already been observed in CI/local execution.
+### 1. Medium: Orchestrator decisions are validated syntactically, not against current state prerequisites
+- Evidence: `AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:215`
+- Evidence: `AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:668`
+- Evidence: `AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:172`
+- Evidence: `AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:176`
+- Plan reference: `docs/plan.md` sections 6.1 and 6.2
+- Issue: `SelectNextRoleAsync` only rejects malformed role payloads (reason/confidence/enum), but it does not reject context-invalid choices (for example `Reviewer` before `SecretWord` and `LatestGuess` exist). The workflow then fails later with a deterministic error message instead of rerouting safely.
+- Risk: valid-but-context-wrong orchestrator output can prematurely terminate a turn even though deterministic routing data is available.
 - Suggested fix:
-  - Capture the actual status code currently returned by the app.
-  - Replace `BeOneOf(...)` with a single expected status assertion.
-  - If behavior legitimately differs by hosting profile, split into explicit environment-specific tests with clear naming.
+1. Add state-aware role validation in `SelectNextRoleAsync` (or a dedicated validator) so a role is considered invalid when required prerequisites are missing.
+2. When context validation fails, fall back to `DetermineOrchestratorDecision(state)` directly instead of entering the stage and failing.
+3. Add a test where orchestrator returns `Reviewer` on an empty turn state and assert the workflow reroutes to `FirstPlayer` (or deterministic fallback path) rather than ending with "Reviewer stage requires both...".
 
-### 2. Low: Overridden-stopwords integration test leaks disposable test infrastructure
-- Evidence: `AnagramSolver.WebApp.Tests/AnalysisControllerApiTests.cs:174`
-- Current issue: `new WebApplicationFactory<Program>()...CreateClient()` is created without disposing the factory/client.
-- Risk: resource leakage and intermittent instability in larger test runs.
+### 2. Medium: First-player output validation does not enforce dictionary-word constraint for produced anagram
+- Evidence: `AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:688`
+- Evidence: `AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:711`
+- Evidence: `AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:403`
+- Plan reference: `docs/plan.md` objective section 1 (dictionary-based game flow)
+- Issue: `ValidateFirstPlayerOutput` checks one-token shape and character signature, but does not verify the produced anagram is a dictionary word.
+- Risk: model output like a non-word permutation can pass validation and degrade game integrity.
 - Suggested fix:
-  - Wrap both factory and client in `using` statements.
-  - Example pattern:
-    - `using var factory = new WebApplicationFactory<Program>()...;`
-    - `using var client = factory.CreateClient();`
+1. Add dictionary membership validation for `ProducedAnagram` (for example through `AnagramTools`/repository lookup).
+2. Keep the existing signature validation as a secondary guard.
+3. Add a test where first-player returns a non-dictionary permutation with matching signature and assert fail-safe fallback.
 
-### 3. Low: Large-body perf-smoke test name implies timing guarantee but does not measure or bound runtime
-- Evidence: `AnagramSolver.WebApp.Tests/AnalysisControllerApiTests.cs:206`
-- Plan expectation: section 6.7 calls for a bounded integration/perf-smoke check and "within reasonable time".
-- Current issue: test asserts correctness and successful completion but has no explicit time bound.
-- Risk: significant performance regressions can slip through while the test still passes.
-- Suggested fix:
-  - Add a lightweight upper bound using `Stopwatch` and an intentionally relaxed threshold suitable for CI.
-  - Keep the test non-benchmark (single coarse threshold only).
+## Test Coverage Gaps
 
-## Security Review
-- No security concerns identified in reviewed scope.
-- Input handling, cancellation behavior, and null/invalid payload handling remain aligned with expected API behavior.
+### 1. Missing regression test for context-invalid orchestrator role with deterministic reroute
+- Current tests cover malformed/invalid role values and rerouting behavior, but not the context-invalid case where role enum is valid yet impossible for current state.
+- Suggested test name: `ExecuteAsync_WhenOrchestratorChoosesReviewerBeforeGuess_ShouldRerouteDeterministically`.
 
-## Coverage and Plan Alignment
-- Analyzer unit tests required by `docs/test-plan.md` section 5.1 are present.
-- Controller unit tests required by `docs/test-plan.md` section 5.2 are present.
-- Integration scenarios in section 6 are implemented, with the quality gaps above.
+### 2. Missing regression test for dictionary constraint on first-player produced anagram
+- Existing tests cover "not single word" and "not anagram" cases, but not "anagram signature valid but not a dictionary word".
+- Suggested test name: `FirstPlayer_WhenProducedAnagramIsNotDictionaryWord_ShouldFailSafe`.
+
+## Security and Validation Notes
+- Secret isolation is implemented: second-player prompt includes only the anagram token and explicit instruction not to output unknown secret (`AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:785`).
+- Reviewer verdict is cross-checked deterministically and conflicting/malformed model output falls back safely (`AnagramMsAgentFramework.Console/Workflows/GroupChat/GroupChatWorkflow.cs:465`).
+
+## Test Run Status
+- Executed: `AnagramSolver.Tests/GroupChatWorkflowTests.cs`
+- Executed: `AnagramSolver.Tests/GroupChatWorkflowRoutingTests.cs`
+- Executed: `AnagramSolver.Tests/GroupChatWorkflowStreamingTests.cs`
+- Executed: `AnagramSolver.Tests/GroupChatWorkflowContractIntegrationTests.cs`
+- Executed: `AnagramSolver.Tests/ProgramWorkflowModeTests.cs`
+- Result: 28 passed, 0 failed.
 
 ## Overall Assessment
-- No critical bugs found.
-- Main remaining work is tightening test precision and reliability so behavior regressions are caught deterministically.
+- Implementation is largely aligned with the plan and includes strong deterministic fallback and cancellation behavior.
+- Main remaining risks are state-aware routing validation and dictionary-level validation of first-player output.
